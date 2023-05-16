@@ -1,0 +1,180 @@
+---
+title: "Greedy Optimization"
+subtitle: "Simple optimization under constraints"
+output: html_document
+date: "2028-05-16"
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(reticulate)
+```
+
+\
+\
+
+The code provided explains the `greedy optimization algorithm`. The greedy algorithm performs the allocation of food items to a menu based on various criteria. Let's break down the code.
+
+\
+\
+
+## Optimization Problem
+
+Each food item has a `nutrition value`, which is good, and a `calorie value`, which should be kept below a limit. The optimization goal of this code is to select a combination of food items from a menu that maximizes the total value while staying within a constraint on the total calorie content.
+
+\
+\
+
+## Food Class
+
+The `Food` class represents a food item and has the following attributes:
+
+- `name`: A string representing the name of the food.
+- `value`: A number representing the value of the food (this must be maximized)
+- `calories`: A number representing the calorie content of the food (this must be constraint)
+
+The class provides the following methods:
+
+- `getValue()`: Returns the value of the food.
+- `getCost()`: Returns the calorie content of the food.
+- `density()`: Calculates and returns the value-to-calorie ratio of the food.
+- `__str__()`: Returns a string representation of the food object.
+
+
+
+```{python}
+
+# initiating the Food Class
+class Food(object):
+    def __init__(self, n, v, w):
+        self.name = n
+        self.value = v
+        self.calories = w
+    def getValue(self):
+        return self.value
+    def getCost(self):
+        return self.calories
+    def density(self):
+        return self.getValue()/self.getCost()
+    def __str__(self):
+        return self.name + ': <' + str(self.value)\
+                 + ', ' + str(self.calories) + '>'
+
+```
+
+\
+\
+
+## Functions
+
+### buildMenu Function
+
+The `buildMenu` function takes three lists (`names`, `values`, and `calories`) of the same length as input. It creates a menu by instantiating `Food` objects using the corresponding elements from the input lists. The function returns a list of `Food` objects representing the menu.
+
+### greedy Function
+
+The `greedy` function performs a greedy allocation of items from a given list (`items`) based on a maximum cost (`maxCost`) and a key function (`keyFunction`). The function assumes that `items` is a list, `maxCost` is a non-negative number, and `keyFunction` maps elements of `items` to numbers.
+
+The function first makes a copy of the `items` list, sorted in descending order based on the `keyFunction` values. It then iterates through the sorted list, adding items to the result as long as the total cost remains within the `maxCost` constraint. The function returns a tuple containing the list of selected items and the total value of the selected items.
+
+### testGreedy Function
+
+The `testGreedy` function takes a list of items (`items`), a constraint (`constraint`), and a key function (`keyFunction`). It calls the `greedy` function to perform a greedy allocation of items based on the given parameters. The function prints the total value of the selected items and displays each selected item.
+
+### testGreedys Function
+
+The `testGreedys` function takes a list of `foods` and a maximum calorie value (`maxUnits`). It demonstrates the greedy allocation by calling `testGreedy` with different key functions: by value, by cost, and by density. The function prints the chosen allocation strategy and calls `testGreedy` for each strategy.
+
+
+
+```{python}
+
+# Functions
+
+# builds the menu by joining foods
+def buildMenu(names, values, calories):
+    """names, values, calories lists of same length.
+       name a list of strings
+       values and calories lists of numbers
+       returns list of Foods"""
+    menu = []
+    for i in range(len(values)):
+        menu.append(Food(names[i], values[i],
+                          calories[i]))
+    return menu
+
+# optimizer
+def greedy(items, maxCost, keyFunction):
+    """Assumes items a list, maxCost >= 0,
+         keyFunction maps elements of items to numbers"""
+    itemsCopy = sorted(items, key = keyFunction,
+                       reverse = True)
+    result = []
+    totalValue, totalCost = 0.0, 0.0
+    for i in range(len(itemsCopy)):
+        if (totalCost+itemsCopy[i].getCost()) <= maxCost:
+            result.append(itemsCopy[i])
+            totalCost += itemsCopy[i].getCost()
+            totalValue += itemsCopy[i].getValue()
+    return (result, totalValue)
+
+
+# runs one test and returns
+def testGreedy(items, constraint, keyFunction):
+    taken, val = greedy(items, constraint, keyFunction)
+    print('Total value of items taken =', val)
+    for item in taken:
+        print('   ', item)
+
+# Runs all tests and Prints the results
+def testGreedys(foods, maxUnits):
+    print('Use greedy by value to allocate', maxUnits,
+          'calories')
+    testGreedy(foods, maxUnits, Food.getValue)
+    print('\nUse greedy by cost to allocate', maxUnits,
+          'calories')
+    testGreedy(foods, maxUnits,
+               lambda x: 1/Food.getCost(x))
+    print('\nUse greedy by density to allocate', maxUnits,
+          'calories')
+    testGreedy(foods, maxUnits, Food.density)
+
+```
+
+
+\
+\
+
+## Example Usage
+
+Here we run an example. We creates a list of food items using the `buildMenu` function, assigns it to the `foods` variable, and calls `testGreedys` with the `foods` list and a maximum calorie value of 1000.
+
+The output of the code includes the total value of the selected items for each allocation strategy (by value, by cost, and by density) and lists the selected food items.
+
+
+### Loading the Test Values
+
+
+```{python}
+# load data
+names = ['wine', 'beer', 'pizza', 'burger', 'fries', 'cola', 'apple', 'donut', 'cake']
+values = [89,90,95,100,90,79,50,10]
+calories = [123,154,258,354,365,150,95,195]
+
+```
+
+
+
+### Running & Printing the Example
+
+```{python}
+foods = buildMenu(names, values, calories)
+testGreedys(foods, 1000)
+```
+
+
+\
+\
+
+For more information, please contact the author michael@aliacon.com.br
