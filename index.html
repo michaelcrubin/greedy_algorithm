@@ -10,8 +10,9 @@
 
 
 
+<meta name="date" content="2028-05-16" />
 
-<title>README</title>
+<title>Greedy Optimization</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -348,14 +349,16 @@ display: none;
 
 
 
+<h1 class="title toc-ignore">Greedy Optimization</h1>
+<h3 class="subtitle">Simple optimization under constraints</h3>
+<h4 class="date">2028-05-16</h4>
 
 </div>
 
 
-<div id="greedy-optimization" class="section level1">
-<h1>Greedy Optimization</h1>
-<div id="simple-optimization-under-constraints" class="section level2">
-<h2>Simple optimization under constraints”</h2>
+<p><br />
+<br />
+</p>
 <p>The code provided explains the
 <code>greedy optimization algorithm</code>. The greedy algorithm
 performs the allocation of food items to a menu based on various
@@ -363,7 +366,6 @@ criteria. Let’s break down the code.</p>
 <p><br />
 <br />
 </p>
-</div>
 <div id="optimization-problem" class="section level2">
 <h2>Optimization Problem</h2>
 <p>Each food item has a <code>nutrition value</code>, which is good, and
@@ -371,7 +373,199 @@ a <code>calorie value</code>, which should be kept below a limit. The
 optimization goal of this code is to select a combination of food items
 from a menu that maximizes the total value while staying within a
 constraint on the total calorie content.</p>
-<p>Access here Detailed Documentation: <a href="https://michaelcrubin.github.io/greedy_algorithm">https://michaelcrubin.github.io/greedy_algorithm</a></p>
+<p><br />
+<br />
+</p>
+</div>
+<div id="food-class" class="section level2">
+<h2>Food Class</h2>
+<p>The <code>Food</code> class represents a food item and has the
+following attributes:</p>
+<ul>
+<li><code>name</code>: A string representing the name of the food.</li>
+<li><code>value</code>: A number representing the value of the food
+(this must be maximized)</li>
+<li><code>calories</code>: A number representing the calorie content of
+the food (this must be constraint)</li>
+</ul>
+<p>The class provides the following methods:</p>
+<ul>
+<li><code>getValue()</code>: Returns the value of the food.</li>
+<li><code>getCost()</code>: Returns the calorie content of the
+food.</li>
+<li><code>density()</code>: Calculates and returns the value-to-calorie
+ratio of the food.</li>
+<li><code>__str__()</code>: Returns a string representation of the food
+object.</li>
+</ul>
+<pre class="python"><code>
+# initiating the Food Class
+class Food(object):
+    def __init__(self, n, v, w):
+        self.name = n
+        self.value = v
+        self.calories = w
+    def getValue(self):
+        return self.value
+    def getCost(self):
+        return self.calories
+    def density(self):
+        return self.getValue()/self.getCost()
+    def __str__(self):
+        return self.name + &#39;: &lt;&#39; + str(self.value)\
+                 + &#39;, &#39; + str(self.calories) + &#39;&gt;&#39;</code></pre>
+<p><br />
+<br />
+</p>
+</div>
+<div id="functions" class="section level2">
+<h2>Functions</h2>
+<div id="buildmenu-function" class="section level3">
+<h3>buildMenu Function</h3>
+<p>The <code>buildMenu</code> function takes three lists
+(<code>names</code>, <code>values</code>, and <code>calories</code>) of
+the same length as input. It creates a menu by instantiating
+<code>Food</code> objects using the corresponding elements from the
+input lists. The function returns a list of <code>Food</code> objects
+representing the menu.</p>
+</div>
+<div id="greedy-function" class="section level3">
+<h3>greedy Function</h3>
+<p>The <code>greedy</code> function performs a greedy allocation of
+items from a given list (<code>items</code>) based on a maximum cost
+(<code>maxCost</code>) and a key function (<code>keyFunction</code>).
+The function assumes that <code>items</code> is a list,
+<code>maxCost</code> is a non-negative number, and
+<code>keyFunction</code> maps elements of <code>items</code> to
+numbers.</p>
+<p>The function first makes a copy of the <code>items</code> list,
+sorted in descending order based on the <code>keyFunction</code> values.
+It then iterates through the sorted list, adding items to the result as
+long as the total cost remains within the <code>maxCost</code>
+constraint. The function returns a tuple containing the list of selected
+items and the total value of the selected items.</p>
+</div>
+<div id="testgreedy-function" class="section level3">
+<h3>testGreedy Function</h3>
+<p>The <code>testGreedy</code> function takes a list of items
+(<code>items</code>), a constraint (<code>constraint</code>), and a key
+function (<code>keyFunction</code>). It calls the <code>greedy</code>
+function to perform a greedy allocation of items based on the given
+parameters. The function prints the total value of the selected items
+and displays each selected item.</p>
+</div>
+<div id="testgreedys-function" class="section level3">
+<h3>testGreedys Function</h3>
+<p>The <code>testGreedys</code> function takes a list of
+<code>foods</code> and a maximum calorie value (<code>maxUnits</code>).
+It demonstrates the greedy allocation by calling <code>testGreedy</code>
+with different key functions: by value, by cost, and by density. The
+function prints the chosen allocation strategy and calls
+<code>testGreedy</code> for each strategy.</p>
+<pre class="python"><code>
+# Functions
+
+# builds the menu by joining foods
+def buildMenu(names, values, calories):
+    &quot;&quot;&quot;names, values, calories lists of same length.
+       name a list of strings
+       values and calories lists of numbers
+       returns list of Foods&quot;&quot;&quot;
+    menu = []
+    for i in range(len(values)):
+        menu.append(Food(names[i], values[i],
+                          calories[i]))
+    return menu
+
+# optimizer
+def greedy(items, maxCost, keyFunction):
+    &quot;&quot;&quot;Assumes items a list, maxCost &gt;= 0,
+         keyFunction maps elements of items to numbers&quot;&quot;&quot;
+    itemsCopy = sorted(items, key = keyFunction,
+                       reverse = True)
+    result = []
+    totalValue, totalCost = 0.0, 0.0
+    for i in range(len(itemsCopy)):
+        if (totalCost+itemsCopy[i].getCost()) &lt;= maxCost:
+            result.append(itemsCopy[i])
+            totalCost += itemsCopy[i].getCost()
+            totalValue += itemsCopy[i].getValue()
+    return (result, totalValue)
+
+
+# runs one test and returns
+def testGreedy(items, constraint, keyFunction):
+    taken, val = greedy(items, constraint, keyFunction)
+    print(&#39;Total value of items taken =&#39;, val)
+    for item in taken:
+        print(&#39;   &#39;, item)
+
+# Runs all tests and Prints the results
+def testGreedys(foods, maxUnits):
+    print(&#39;Use greedy by value to allocate&#39;, maxUnits,
+          &#39;calories&#39;)
+    testGreedy(foods, maxUnits, Food.getValue)
+    print(&#39;\nUse greedy by cost to allocate&#39;, maxUnits,
+          &#39;calories&#39;)
+    testGreedy(foods, maxUnits,
+               lambda x: 1/Food.getCost(x))
+    print(&#39;\nUse greedy by density to allocate&#39;, maxUnits,
+          &#39;calories&#39;)
+    testGreedy(foods, maxUnits, Food.density)</code></pre>
+<p><br />
+<br />
+</p>
+</div>
+</div>
+<div id="example-usage" class="section level2">
+<h2>Example Usage</h2>
+<p>Here we run an example. We creates a list of food items using the
+<code>buildMenu</code> function, assigns it to the <code>foods</code>
+variable, and calls <code>testGreedys</code> with the <code>foods</code>
+list and a maximum calorie value of 1000.</p>
+<p>The output of the code includes the total value of the selected items
+for each allocation strategy (by value, by cost, and by density) and
+lists the selected food items.</p>
+<div id="loading-the-test-values" class="section level3">
+<h3>Loading the Test Values</h3>
+<pre class="python"><code># load data
+names = [&#39;wine&#39;, &#39;beer&#39;, &#39;pizza&#39;, &#39;burger&#39;, &#39;fries&#39;, &#39;cola&#39;, &#39;apple&#39;, &#39;donut&#39;, &#39;cake&#39;]
+values = [89,90,95,100,90,79,50,10]
+calories = [123,154,258,354,365,150,95,195]</code></pre>
+</div>
+<div id="running-printing-the-example" class="section level3">
+<h3>Running &amp; Printing the Example</h3>
+<pre class="python"><code>foods = buildMenu(names, values, calories)
+testGreedys(foods, 1000)</code></pre>
+<pre><code>## Use greedy by value to allocate 1000 calories
+## Total value of items taken = 424.0
+##     burger: &lt;100, 354&gt;
+##     pizza: &lt;95, 258&gt;
+##     beer: &lt;90, 154&gt;
+##     wine: &lt;89, 123&gt;
+##     apple: &lt;50, 95&gt;
+## 
+## Use greedy by cost to allocate 1000 calories
+## Total value of items taken = 413.0
+##     apple: &lt;50, 95&gt;
+##     wine: &lt;89, 123&gt;
+##     cola: &lt;79, 150&gt;
+##     beer: &lt;90, 154&gt;
+##     donut: &lt;10, 195&gt;
+##     pizza: &lt;95, 258&gt;
+## 
+## Use greedy by density to allocate 1000 calories
+## Total value of items taken = 413.0
+##     wine: &lt;89, 123&gt;
+##     beer: &lt;90, 154&gt;
+##     cola: &lt;79, 150&gt;
+##     apple: &lt;50, 95&gt;
+##     pizza: &lt;95, 258&gt;
+##     donut: &lt;10, 195&gt;</code></pre>
+<p><br />
+<br />
+</p>
+<p>For more information, please contact the author <a href="mailto:michael@aliacon.com.br" class="email">michael@aliacon.com.br</a></p>
 </div>
 </div>
 
